@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
 
-from posts.models import Comment, Post
+from posts.models import Comment, Group, Post
 
 
 class Base64ImageField(serializers.ImageField):
@@ -17,12 +17,19 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
+class GroupSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Group
+        fields = ('id', 'title', 'slug', 'description')
+
+
 class PostSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
     image = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
-        fields = ('id', 'text', 'pub_date', 'author', 'image')
+        fields = ('id', 'text', 'pub_date', 'author', 'image', 'group')
         model = Post
 
 
