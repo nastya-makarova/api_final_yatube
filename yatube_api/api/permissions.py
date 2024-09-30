@@ -18,7 +18,7 @@ class OwnerOrReadOnly(permissions.BasePermission):
 
 
 class ReadOnly(permissions.BasePermission):
-    """Разрешение на получение информации о конкретном объекте."""
+    """Разрешение на получение информации анонимным пользователем."""
 
     def has_permission(self, request, view):
         return request.method in permissions.SAFE_METHODS

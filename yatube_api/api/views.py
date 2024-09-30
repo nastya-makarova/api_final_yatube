@@ -1,11 +1,15 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
+from rest_framework import filters, viewsets
+from rest_framework.exceptions import MethodNotAllowed, ParseError
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.exceptions import ParseError
-from rest_framework.response import Response
 
 from .permissions import OwnerOrReadOnly, ReadOnly
-from .serializers import CommentSerializer, GroupSerializer, FollowSerializer, PostSerializer
+from .serializers import (
+    CommentSerializer,
+    FollowSerializer,
+    GroupSerializer,
+    PostSerializer,
+)
 from posts.models import Follow, Group, Post, User
 
 
@@ -41,13 +45,22 @@ class CommentViewSet(BaseViewSet):
         serializer.save(author=self.request.user, post=self.get_post())
 
 
-class GroupViewSet(viewsets.ReadOnlyModelViewSet):
+class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    permission_classes = (ReadOnly,)
+
+    def get_permissions(self):
+        if self.action == 'create':
+            print('create')
+            raise MethodNotAllowed('POST')
+        return super().get_permissions()
 
 
 class FollowViewSet(viewsets.ModelViewSet):
     serializer_class = FollowSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('following__username',)
 
     def get_user(self):
         user_id = self.request.user.id
@@ -58,7 +71,10 @@ class FollowViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         following_name = self.request.data.get('following')
-        following_user = get_object_or_404(User, username=following_name)
+        following_user = User.objects.filter(username=following_name).first()
+
+        if not following_user:
+            raise ParseError('Пользователя с таким именем не существует.')
 
         if self.request.user == following_user:
             raise ParseError('Вы не можете подптсаться на самого себя.'
