@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
 
-from posts.models import Comment, Group, Post
+from posts.models import Comment, Group, Follow, Post
 
 
 class Base64ImageField(serializers.ImageField):
@@ -42,3 +42,16 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'author', 'post', 'text', 'created')
         model = Comment
         read_only_fields = ('post',)
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
+    following = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
+
+    class Meta:
+        model = Follow
+        fields = ('user', 'following')

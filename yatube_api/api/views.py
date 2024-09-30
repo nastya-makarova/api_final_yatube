@@ -1,10 +1,12 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.exceptions import ParseError
+from rest_framework.response import Response
 
 from .permissions import OwnerOrReadOnly, ReadOnly
-from .serializers import CommentSerializer, GroupSerializer, PostSerializer
-from posts.models import Group, Post
+from .serializers import CommentSerializer, GroupSerializer, FollowSerializer, PostSerializer
+from posts.models import Follow, Group, Post, User
 
 
 class BaseViewSet(viewsets.ModelViewSet):
@@ -41,5 +43,28 @@ class CommentViewSet(BaseViewSet):
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
-    print(queryset)
     serializer_class = GroupSerializer
+
+
+class FollowViewSet(viewsets.ModelViewSet):
+    serializer_class = FollowSerializer
+
+    def get_user(self):
+        user_id = self.request.user.id
+        return get_object_or_404(User, id=user_id)
+
+    def get_queryset(self):
+        return self.get_user().follower.all()
+
+    def perform_create(self, serializer):
+        following_name = self.request.data.get('following')
+        following_user = get_object_or_404(User, username=following_name)
+
+        if self.request.user == following_user:
+            raise ParseError('Вы не можете подптсаться на самого себя.'
+                             'Укажите другое имя пользователя.')
+
+        if Follow.objects.filter(user=self.request.user, following=following_user):
+            raise ParseError('Вы уже подписаны на этого пользователя.')
+
+        serializer.save(user=self.request.user, following=following_user)
