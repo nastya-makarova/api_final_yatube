@@ -64,7 +64,9 @@ class FollowViewSet(viewsets.ModelViewSet):
             raise ParseError('Вы не можете подптсаться на самого себя.'
                              'Укажите другое имя пользователя.')
 
-        if Follow.objects.filter(user=self.request.user, following=following_user):
+        if Follow.objects.filter(
+            user=self.request.user, following=following_user
+        ):
             raise ParseError('Вы уже подписаны на этого пользователя.')
 
         serializer.save(user=self.request.user, following=following_user)
