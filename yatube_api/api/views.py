@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, viewsets
-from rest_framework.exceptions import MethodNotAllowed, ParseError
+from rest_framework.exceptions import ParseError
 from rest_framework.pagination import LimitOffsetPagination
 
-from .permissions import OwnerOrReadOnly, ReadOnly
+from .permissions import OwnerOrReadOnly, ReadOnly, ReadOnlyForGroups
 from .serializers import (
     CommentSerializer,
     FollowSerializer,
@@ -48,13 +48,7 @@ class CommentViewSet(BaseViewSet):
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = (ReadOnly,)
-
-    def get_permissions(self):
-        if self.action == 'create':
-            print('create')
-            raise MethodNotAllowed('POST')
-        return super().get_permissions()
+    permission_classes = (ReadOnlyForGroups,)
 
 
 class FollowViewSet(viewsets.ModelViewSet):
