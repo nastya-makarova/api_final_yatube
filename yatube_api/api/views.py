@@ -61,16 +61,4 @@ class FollowViewSet(
         following_name = self.request.data.get('following')
         following_user = User.objects.filter(username=following_name).first()
 
-        if not following_user:
-            raise ParseError('Пользователя с таким именем не существует.')
-
-        if self.request.user == following_user:
-            raise ParseError('Вы не можете подптсаться на самого себя.'
-                             'Укажите другое имя пользователя.')
-
-        if Follow.objects.filter(
-            user=self.request.user, following=following_user
-        ):
-            raise ParseError('Вы уже подписаны на этого пользователя.')
-
         serializer.save(user=self.request.user, following=following_user)
