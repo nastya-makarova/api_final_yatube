@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, viewsets
-from rest_framework.exceptions import ParseError
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
@@ -11,7 +10,7 @@ from .serializers import (
     GroupSerializer,
     PostSerializer,
 )
-from posts.models import Follow, Group, Post, User
+from posts.models import Group, Post, User
 
 
 class PostViewSet(viewsets.ModelViewSet):
