@@ -64,3 +64,6 @@ class FollowSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+# В FollowSerializer полю following можно прописать read_only=False,
+# тогда сериализатор сам будет брать данные из запроса и доставать запись из базы, и тебе не придётся делать это вручную
